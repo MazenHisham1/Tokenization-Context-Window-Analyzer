@@ -1,0 +1,9 @@
+tiktoken
+transformers
+tokenizers
+sentencepiece
+protobuf
+pytest
+fastapi
+uvicorn
+httpx

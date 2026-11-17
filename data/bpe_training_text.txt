@@ -1,0 +1,4 @@
+Tokenization turns text into tokens. A tokenizer splits text into subword tokens, and each token has an id.
+Language models read token ids, not words. The tokenizer learns frequent pieces such as ing, tion, the and token
+from a training corpus. Lower, lowest, newer and newest share the pieces low, new, er and est.
+A context window is the maximum number of tokens a model can read at once, including its own answer.
