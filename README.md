@@ -71,8 +71,8 @@ Real counts from this project (`run_compare.py`), one sentence per category:
 You need **Python 3.10+** and **Node.js 22 LTS**.
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/REPO-NAME.git
-cd REPO-NAME
+git clone https://github.com/MazenHisham1/Tokenization-Context-Window-Analyzer.git
+cd Tokenization-Context-Window-Analyzer
 pip install -r requirements.txt
 ```
 
