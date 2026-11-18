@@ -12,7 +12,7 @@ Compare how OpenAI, Llama and Gemma tokenizers split the same sentence, and look
 ![tiktoken](https://img.shields.io/badge/tiktoken-OpenAI-412991)
 ![Hugging Face](https://img.shields.io/badge/Hugging%20Face-tokenizers-FFD21E?logo=huggingface&logoColor=black)
 
-[Screenshots](#screenshots) · [What I found](#what-i-found) · [Quick start](#quick-start) · [Architecture](#architecture) · [Roadmap](#roadmap)
+[Screenshots](#screenshots) · [Compare view](#compare-view) · [What I found](#what-i-found) · [Quick start](#quick-start) · [Architecture](#architecture) · [Roadmap](#roadmap)
 
 </div>
 
@@ -24,7 +24,7 @@ An LLM never sees words. It sees **tokens**, and the tokenizer decides how many 
 
 This project is a working lab for that idea. It runs real tokenizers, shows exactly where each one cuts the text, and includes a **byte-level BPE tokenizer I wrote from scratch** to understand the algorithm instead of only using it.
 
-> **Status:** working local app (engine, API, web UI). Side-by-side comparison, the context-window simulator and deployment are next (see the [roadmap](#roadmap)). **Live demo:** coming with deployment.
+> **Status:** working local app (engine, API, web UI, side-by-side comparison). The context-window simulator and deployment are next (see the [roadmap](#roadmap)). **Live demo:** coming with deployment.
 
 ## Screenshots
 
@@ -54,6 +54,20 @@ The same text, four tokenizers. Each colour block is one token.
 - **Dashed blocks** mark a character the tokenizer had no token for, so it fell back to raw bytes (one emoji becomes several tokens).
 - **Words split into several tokens**, for example `1234567 → 123 | 456 | 7`.
 - Table view, **Copy token IDs**, light and dark mode, and a layout that works on a phone.
+
+## Compare view
+
+Switch to **Compare tokenizers** to run one text through every tokenizer at once.
+
+![Token counts, a bar chart and the words each tokenizer cuts differently](docs/compare_tables.png)
+
+![The same text as coloured tokens, one panel per tokenizer](docs/compare_panels.png)
+
+- **Count table with bars**, a "vs fewest" column and a one-sentence summary (`my-bpe` needs 175% more tokens than `o200k_base`: 55 against 20).
+- **Where the tokenizers disagree:** only the words that were cut differently, for example `1234567` is `123 | 456 | 7` in `o200k_base` and Llama but seven single digits in Gemma.
+- **Side-by-side coloured panels**, one per tokenizer.
+- **Honest about estimates.** Some vendors do not publish a tokenizer you can run (Anthropic, for example, offers a token-counting API whose docs call the result an estimate). Such entries are shown with a striped bar and an "estimate" badge, have no token list, and are never marked "fewest".
+- **One failure does not break the rest.** A tokenizer that cannot load gets an error row; the others still run, in parallel.
 
 ## What I found
 
@@ -161,6 +175,7 @@ To change what it learns, edit that text file and restart the server. `run_compa
 |---|---|---|
 | `GET` | `/api/tokenizers` | Names and metadata (never loads a model) |
 | `POST` | `/api/tokenize` | `{text, tokenizer}` returns the count and every token (id, text, piece, byte span) |
+| `POST` | `/api/compare` | `{text, tokenizers?}` returns one result per tokenizer: count, exact or estimate, first 1,000 tokens, or an error |
 | `GET` | `/api/models` | Context windows from the config, with source and verification date |
 | `GET` | `/api/limits`, `/api/health` | Limits and a health check |
 
@@ -176,13 +191,13 @@ curl -X POST http://127.0.0.1:8000/api/tokenize \
 config/models.json   tokenizers and models (context window, source URL, last_verified)
 src/                 engine: from-scratch BPE, adapters, registry, config loader
 api/                 FastAPI server
-frontend/            React + TypeScript (Vite): coloured view, tooltips, word splits
+frontend/            React + TypeScript (Vite): coloured view, tooltips, word splits, compare view
 tests/               pytest suite for the engine and the API
 notebooks/           BPE from scratch, tokenizer comparison
 docs/                design notes and phase walkthroughs
 ```
 
-More detail: [engine design](docs/DESIGN.md) · [web app walkthrough](docs/PHASE3_WALKTHROUGH.md) · [coloured view walkthrough](docs/PHASE4_WALKTHROUGH.md)
+More detail: [engine design](docs/DESIGN.md) · [web app walkthrough](docs/PHASE3_WALKTHROUGH.md) · [coloured view walkthrough](docs/PHASE4_WALKTHROUGH.md) · [compare view walkthrough](docs/PHASE5_WALKTHROUGH.md)
 
 ## Roadmap
 
@@ -191,16 +206,16 @@ More detail: [engine design](docs/DESIGN.md) · [web app walkthrough](docs/PHASE
 - [x] **Phase 2:** common interface, adapters, registry, sourced config
 - [x] **Phase 3:** API and web MVP
 - [x] **Phase 4:** coloured token view, tooltips, word splits
-- [ ] **Phase 5:** side-by-side comparison with charts
+- [x] **Phase 5:** side-by-side comparison with charts
 - [ ] **Phase 6:** context-window simulator (what is kept or dropped on overflow)
 - [ ] **Phase 7:** CI, accessibility and performance work
 - [ ] **Phase 8:** deployment, plus a multilingual token-cost study
 
 ## Known limitations
 
-- The coloured view shows the first 2,000 tokens, and the table the first 1,000, to keep the page fast.
+- The coloured view shows the first 2,000 tokens, and the table the first 1,000. In the compare view each panel shows the first 1,000. The counts are always complete.
 - Keyboard users cannot move between the coloured blocks; the Table view is the accessible alternative for now.
-- Tokenizers that are not published (some closed models) can only be estimated, not run. The interface has an `exact` flag for this, but no such adapter exists yet.
+- Tokenizers that are not published (some closed models) can only be estimated, not run. The interface has an `exact` flag for this, and a simple `characters ÷ 4` estimate is included to show how they are labelled. No vendor-specific estimator exists yet.
 - Tested in Chromium. Not yet checked in Safari or Firefox.
 - Not deployed yet.
 
