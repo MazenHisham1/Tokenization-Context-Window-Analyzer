@@ -19,6 +19,10 @@ class TokenizerLoadError(RuntimeError):
     """A tokenizer could not be loaded (offline, gated model, wrong name...)."""
 
 
+class TokenizationNotSupported(RuntimeError):
+    """This tokenizer can only estimate a count; it cannot list tokens."""
+
+
 @dataclass(frozen=True, slots=True)
 class Token:
     id: int
@@ -35,13 +39,17 @@ class Token:
 class Tokenizer(ABC):
     """Base class. Subclasses implement `encode`."""
 
-    def __init__(self, name: str, *, family: str = "", algorithm: str = "", exact: bool = True):
+    def __init__(self, name: str, *, family: str = "", algorithm: str = "", exact: bool = True,
+                 provides_tokens: bool = True):
         if not name:
             raise ValueError("a tokenizer needs a non-empty name")
         self.name = name
         self.family = family          # e.g. "OpenAI", "Meta"
         self.algorithm = algorithm    # e.g. "byte-level BPE"
         self.exact = exact            # False for estimates (closed tokenizers)
+        # False when only a count is available (no token list), e.g. a rule of thumb or a
+        # vendor's counting API. `encode` then raises TokenizationNotSupported.
+        self.provides_tokens = provides_tokens
 
     @abstractmethod
     def encode(self, text: str) -> list[Token]:

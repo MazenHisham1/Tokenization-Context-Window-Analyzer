@@ -24,7 +24,7 @@ class BPETokenizer:
     def _pair_counts(words):
         counts = Counter()
         for word, freq in words.items():
-            for pair in zip(word, word[1:]):
+            for pair in zip(word, word[1:], strict=False):
                 counts[pair] += freq
         return counts
 
@@ -71,7 +71,7 @@ class BPETokenizer:
             return self._cache[piece]
         ids = list(piece.encode("utf-8"))
         while len(ids) >= 2:
-            pairs = set(zip(ids, ids[1:]))
+            pairs = set(zip(ids, ids[1:], strict=False))
             # apply the merge that was learned EARLIEST (lowest new id)
             best = min(pairs, key=lambda p: self.merges.get(p, float("inf")))
             if best not in self.merges:

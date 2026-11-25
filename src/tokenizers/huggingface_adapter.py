@@ -57,5 +57,5 @@ class HuggingFaceAdapter(Tokenizer):
         byte_at = char_to_byte_offsets(text)
         return [
             Token(id=i, text=text[s:e], start=byte_at[s], end=byte_at[e], piece=str(p))
-            for i, (s, e), p in zip(ids, spans, pieces)
+            for i, (s, e), p in zip(ids, spans, pieces, strict=True)
         ]

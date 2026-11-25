@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-from .tokenizers import HuggingFaceAdapter, TiktokenAdapter, TokenizerRegistry
+from .tokenizers import HeuristicAdapter, HuggingFaceAdapter, TiktokenAdapter, TokenizerRegistry
 
 
 class ConfigError(ValueError):
@@ -73,6 +73,9 @@ def build_registry(tokenizer_specs: dict[str, dict]) -> TokenizerRegistry:
         elif adapter == "huggingface":
             registry.register_factory(name, lambda n=name, s=spec: HuggingFaceAdapter(
                 n, s["hf_id"], family=s.get("family", ""), algorithm=s.get("algorithm", "")))
+        elif adapter == "heuristic":
+            registry.register_factory(name, lambda n=name, s=spec: HeuristicAdapter(
+                n, s.get("chars_per_token", 4.0), family=s.get("family", "estimate")))
         else:
             raise ConfigError(f"tokenizer {name}: unknown adapter {adapter!r}")
     return registry

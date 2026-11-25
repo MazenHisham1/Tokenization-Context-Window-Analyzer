@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import threading
-from typing import Callable
+from collections.abc import Callable
 
 from .base import Tokenizer
 
@@ -11,7 +11,8 @@ class TokenizerRegistry:
     def __init__(self):
         self._factories: dict[str, Callable[[], Tokenizer]] = {}
         self._instances: dict[str, Tokenizer] = {}
-        self._lock = threading.Lock()   # the web server calls get() from several threads
+        self._guard = threading.Lock()                 # protects the dict of locks below
+        self._locks: dict[str, threading.Lock] = {}    # one lock per tokenizer name
 
     def register(self, tokenizer: Tokenizer, *, replace: bool = False) -> None:
         """Register a ready tokenizer instance."""
@@ -29,7 +30,15 @@ class TokenizerRegistry:
     def get(self, name: str) -> Tokenizer:
         if name not in self._factories:
             raise KeyError(f"unknown tokenizer {name!r}; available: {sorted(self._factories)}")
-        with self._lock:                      # two requests must not load the same model twice
+        tokenizer = self._instances.get(name)
+        if tokenizer is not None:
+            return tokenizer
+        # The web server calls get() from several threads. One lock PER NAME means two
+        # requests for the same model load it once, while different models load in parallel
+        # (the comparison endpoint relies on that).
+        with self._guard:
+            lock = self._locks.setdefault(name, threading.Lock())
+        with lock:
             if name not in self._instances:
                 self._instances[name] = self._factories[name]()
             return self._instances[name]
