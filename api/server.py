@@ -19,7 +19,8 @@ def build_default_app():
     specs, models = load_config(ROOT / "config" / "models.json")
     registry = build_registry(specs)   # lazy: nothing is downloaded yet
     infos = [TokenizerInfo(name=n, family=s.get("family", ""), algorithm=s.get("algorithm", ""),
-                           exact=True) for n, s in specs.items()]
+                           exact=s.get("exact", True), has_tokens=s.get("adapter") != "heuristic")
+             for n, s in specs.items()]
 
     # Your own tokenizer from Phase 0, trained at start-up on a small bundled text (fast).
     text = (ROOT / "data" / "bpe_training_text.txt").read_text(encoding="utf-8")
