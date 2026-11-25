@@ -1,11 +1,11 @@
+from dataclasses import FrozenInstanceError
 from datetime import date
 from pathlib import Path
 
 import pytest
 
 from src.config import ConfigError, build_registry, load_config, stale_models
-from src.tokenizers import (CustomBPEAdapter, Token, Tokenizer, TokenizerRegistry,
-                            compare_counts, char_spans)
+from src.tokenizers import CustomBPEAdapter, Token, Tokenizer, TokenizerRegistry, char_spans, compare_counts
 
 CONFIG = Path(__file__).parent.parent / "config" / "models.json"
 
@@ -17,7 +17,7 @@ class Dummy(Tokenizer):
 
 def test_token_is_immutable_and_validates_span():
     t = Token(1, "a", 0, 1)
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError):
         t.id = 2
     with pytest.raises(ValueError):
         Token(1, "a", 5, 2)
@@ -53,7 +53,8 @@ def test_registry_factories_are_lazy_and_cached():
     r = TokenizerRegistry()
     r.register_factory("lazy", lambda: calls.append(1) or Dummy("lazy"))
     assert calls == []
-    r.get("lazy"); r.get("lazy")
+    r.get("lazy")
+    r.get("lazy")
     assert calls == [1]
 
 

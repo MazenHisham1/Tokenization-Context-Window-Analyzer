@@ -1,8 +1,7 @@
 """Contract tests: every adapter must obey the same rules."""
 import pytest
 
-from src.tokenizers import (CustomBPEAdapter, HuggingFaceAdapter, TiktokenAdapter, Token,
-                            char_spans)
+from src.tokenizers import CustomBPEAdapter, HuggingFaceAdapter, TiktokenAdapter, Token, char_spans
 
 TEXTS = ["", "hello world", "  leading and  double  spaces ", "مرحبا بالعالم", "Hello 😊",
          "a\nb\tc", "low lowest newest!", "x" * 5000, "<|endoftext|>x"]
@@ -39,7 +38,7 @@ def test_byte_exact_adapters_cover_input_exactly(my_bpe, tiktoken_encoding, text
     for ad in (TiktokenAdapter("t", encoding=tiktoken_encoding), CustomBPEAdapter(my_bpe)):
         tokens = ad.encode(text)
         assert tokens[0].start == 0 and tokens[-1].end == len(text.encode("utf-8"))
-        assert all(a.end == b.start for a, b in zip(tokens, tokens[1:]))   # no gaps/overlaps
+        assert all(a.end == b.start for a, b in zip(tokens, tokens[1:], strict=False))   # no gaps/overlaps
         raw = text.encode("utf-8")
         assert b"".join(raw[t.start:t.end] for t in tokens) == raw
 

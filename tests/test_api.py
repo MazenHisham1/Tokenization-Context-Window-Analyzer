@@ -76,6 +76,19 @@ def test_lone_surrogate_is_422_not_500(client):
 
 
 def test_default_app_builds_offline():
-    from api.server import app      # reads the real config, trains my-bpe, loads no model
+    from api.server import app  # reads the real config, trains my-bpe, loads no model
     names = [t["name"] for t in TestClient(app).get("/api/tokenizers").json()]
     assert "my-bpe" in names and "o200k_base" in names
+
+
+def test_tokenize_caps_the_returned_tokens_but_reports_the_full_count(client):
+    from api.schemas import TOKENIZE_MAX_TOKENS
+    text = "zqxj kwvp " * 600                         # rare letters: almost one token per character
+    body = client.post("/api/tokenize", json={"text": text, "tokenizer": "my-bpe"}).json()
+    assert body["count"] > TOKENIZE_MAX_TOKENS
+    assert len(body["tokens"]) == TOKENIZE_MAX_TOKENS and body["truncated"] is True
+
+
+def test_tokenize_small_text_is_not_truncated(client):
+    body = client.post("/api/tokenize", json={"text": "hello", "tokenizer": "my-bpe"}).json()
+    assert body["truncated"] is False and body["count"] == len(body["tokens"])

@@ -1,10 +1,11 @@
 """Tiny tokenizers built locally, so the whole suite runs offline."""
 import pytest
 import tiktoken
-from tokenizers import Tokenizer as HFT, decoders, models, normalizers, pre_tokenizers, trainers
 from transformers import PreTrainedTokenizerFast
 
 from src.bpe import PRETOKEN, BPETokenizer
+from tokenizers import Tokenizer as HFT
+from tokenizers import decoders, models, normalizers, pre_tokenizers, trainers
 
 CORPUS = ("low lower lowest newest widest tokenization tokenizer tokens " * 30 +
           "the quick brown fox jumps over the lazy dog. Hello world! " * 30)
