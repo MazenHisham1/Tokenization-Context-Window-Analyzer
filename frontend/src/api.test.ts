@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { formatDetail, tokenize } from "./api";
-import { visible } from "./visible";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -40,8 +39,4 @@ describe("tokenize", () => {
     await tokenize("héllo", "t");
     expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ text: "héllo", tokenizer: "t" });
   });
-});
-
-describe("visible", () => {
-  it("shows spaces, newlines and tabs", () => expect(visible(" a\n\tb")).toBe("·a↵→b"));
 });

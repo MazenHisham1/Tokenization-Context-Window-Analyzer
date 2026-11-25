@@ -1,4 +1,12 @@
-import type { Limits, TokenizeResponse, TokenizerInfo } from "./types";
+import type {
+  CompareResponse,
+  Limits,
+  ModelInfo,
+  SimulateRequest,
+  SimulateResponse,
+  TokenizeResponse,
+  TokenizerInfo,
+} from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -46,5 +54,23 @@ export const tokenize = (text: string, tokenizer: string, signal?: AbortSignal) 
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text, tokenizer }),
+    signal,
+  });
+
+export const compare = (text: string, tokenizers: string[], signal?: AbortSignal) =>
+  request<CompareResponse>("/api/compare", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, tokenizers }),
+    signal,
+  });
+
+export const getModels = (signal?: AbortSignal) => request<ModelInfo[]>("/api/models", { signal });
+
+export const simulate = (req: SimulateRequest, signal?: AbortSignal) =>
+  request<SimulateResponse>("/api/simulate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
     signal,
   });

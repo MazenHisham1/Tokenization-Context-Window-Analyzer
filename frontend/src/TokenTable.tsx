@@ -5,7 +5,8 @@ import { visible } from "./visible";
 // virtualised, colour-coded view. Until then we show the first rows and say so.
 export const MAX_ROWS = 1000;
 
-export function TokenTable({ tokens }: { tokens: Token[] }) {
+export function TokenTable({ tokens, totalTokens }: { tokens: Token[]; totalTokens?: number }) {
+  const total = Math.max(totalTokens ?? tokens.length, tokens.length); // the server may send only the first tokens
   const shown = tokens.slice(0, MAX_ROWS);
   return (
     <div className="table-wrap">
@@ -34,9 +35,9 @@ export function TokenTable({ tokens }: { tokens: Token[] }) {
           ))}
         </tbody>
       </table>
-      {tokens.length > MAX_ROWS && (
+      {total > MAX_ROWS && (
         <p className="notice">
-          Showing the first {MAX_ROWS.toLocaleString()} of {tokens.length.toLocaleString()} tokens.
+          Showing the first {MAX_ROWS.toLocaleString()} of {total.toLocaleString()} tokens.
         </p>
       )}
     </div>

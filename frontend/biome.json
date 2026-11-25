@@ -1,0 +1,18 @@
+{
+  "$schema": "https://biomejs.dev/schemas/latest/schema.json",
+  "files": { "includes": ["src/**", "vite.config.ts"] },
+  "formatter": { "enabled": false },
+  "assist": { "enabled": false },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "a11y": {
+        "useSemanticElements": "off"
+      },
+      "correctness": { "useExhaustiveDependencies": "error", "useHookAtTopLevel": "error" },
+      "suspicious": { "noArrayIndexKey": "off" },
+      "style": { "noNonNullAssertion": "off", "noDescendingSpecificity": "off" },
+      "complexity": { "noImportantStyles": "off" }
+    }
+  }
+}

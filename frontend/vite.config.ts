@@ -6,5 +6,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [react()],
   server: { proxy: { "/api": "http://127.0.0.1:8000" } },
+  // `npm run preview` serves the production build; the end-to-end tests use it.
+  preview: { proxy: { "/api": "http://127.0.0.1:8000" } },
   test: { environment: "node" },
 });

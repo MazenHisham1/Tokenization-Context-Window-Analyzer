@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { copyText, formatIds, type CopyOutcome } from "./copyIds";
 import type { Token } from "./types";
 
-export function CopyIdsButton({ tokens }: { tokens: Token[] }) {
+export function CopyIdsButton({ tokens, totalTokens }: { tokens: Token[]; totalTokens?: number }) {
+  const partial = totalTokens !== undefined && totalTokens > tokens.length; // the server sent only the first tokens
   const [status, setStatus] = useState<CopyOutcome | "idle">("idle");
 
   // Go back to "Copy token IDs" after 2 seconds. The cleanup stops the timer if the
@@ -14,7 +15,7 @@ export function CopyIdsButton({ tokens }: { tokens: Token[] }) {
   }, [status]);
 
   const label =
-    status === "copied" ? "Copied!" : status === "failed" ? "Copy failed" : "Copy token IDs";
+    status === "copied" ? "Copied!" : status === "failed" ? "Copy failed" : partial ? `Copy first ${tokens.length.toLocaleString()} IDs` : "Copy token IDs";
 
   return (
     <>
