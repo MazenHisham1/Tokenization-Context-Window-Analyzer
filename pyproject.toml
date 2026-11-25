@@ -1,0 +1,15 @@
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["frontend"]
+
+[tool.ruff.lint]
+# E/F = pycodestyle and pyflakes errors, I = import order, B = likely bugs, UP = outdated syntax
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.coverage.run]
+source = ["src", "api"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true

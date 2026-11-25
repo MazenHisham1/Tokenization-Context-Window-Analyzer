@@ -16,8 +16,10 @@ HERE = Path(__file__).parent
 specs, models = load_config(HERE / "config" / "models.json")
 registry = build_registry(specs)
 
-# Your own tokenizer from Phase 0. Replace README.md with any bigger text you like.
-my_bpe = BPETokenizer().train((HERE / "README.md").read_text(encoding="utf-8"), vocab_size=300)
+# Your own tokenizer from Phase 0. It is trained on the SAME text as the web app
+# (api/server.py), so "my-bpe" here and "my-bpe" in the UI are the same tokenizer.
+my_bpe = BPETokenizer().train(
+    (HERE / "data" / "bpe_training_text.txt").read_text(encoding="utf-8"), vocab_size=300)
 registry.register(CustomBPEAdapter(my_bpe))
 
 sentences = {
@@ -34,7 +36,7 @@ for label, text in sentences.items():
         rows.append((label, len(text), r.name, r.tokens, r.chars_per_token, r.error or ""))
 
 print(f"{'sentence':<9} {'tokenizer':<11} {'tokens':>6} {'chars/token':>12}")
-for label, nchars, name, tokens, cpt, err in rows:
+for label, _nchars, name, tokens, cpt, err in rows:
     if err:
         print(f"{label:<9} {name:<11} {'ERROR':>6}   {err[:70]}")
     else:
