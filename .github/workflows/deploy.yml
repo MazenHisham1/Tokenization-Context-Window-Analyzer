@@ -1,0 +1,77 @@
+name: Deploy
+
+# Runs after the CI workflow succeeded on main (or by hand from the Actions tab).
+# Needs, in GitHub -> Settings -> Secrets and variables -> Actions:
+#   secret   HF_TOKEN   a Hugging Face token with WRITE access (used only to push to the Space)
+#   variable HF_SPACE   owner/name of the Space, for example MazenHisham1/tokenization-analyzer
+#   variable LIVE_URL   the public address, for example https://mazenhisham1-tokenization-analyzer.hf.space
+# Without HF_SPACE the job is skipped, so the workflow is harmless until you set it up. See docs/DEPLOY.md.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ vars.HF_SPACE != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') }}
+    runs-on: ubuntu-latest
+    # An "environment" with a url is what makes GitHub show a "Deployments" entry with a link on the repo page.
+    environment:
+      name: production
+      url: ${{ vars.LIVE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Collect what the Space needs
+        # Only the files the Docker build uses. (The Hub refuses binary files such as screenshots without Git LFS.)
+        run: |
+          mkdir space
+          cp -r Dockerfile .dockerignore requirements.txt config data src api frontend space/
+          cp deploy/space_README.md space/README.md
+          # leave out anything the build creates itself (and compiled Python files, which are binary)
+          rm -rf space/frontend/node_modules space/frontend/dist
+          find space -name __pycache__ -prune -exec rm -rf {} +
+
+      - name: Push to the Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ vars.HF_SPACE }}
+        run: |
+          cd space
+          git init -q -b main
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Deploy ${GITHUB_SHA}"
+          git push --force "https://${HF_SPACE%%/*}:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}" main
+
+      - name: Wait until the new version answers
+        if: ${{ vars.LIVE_URL != '' }}
+        env:
+          LIVE_URL: ${{ vars.LIVE_URL }}
+        run: |
+          # The Space builds the Docker image first; that takes a few minutes.
+          for i in $(seq 1 60); do
+            if curl -fsS "$LIVE_URL/api/health" | grep -q '"ok"'; then echo "Live: $LIVE_URL"; exit 0; fi
+            echo "not ready yet ($i/60)"; sleep 20
+          done
+          echo "The Space did not answer within 20 minutes. Check its Logs tab on Hugging Face."; exit 1
+
+      - name: Smoke-test the live site
+        if: ${{ vars.LIVE_URL != '' }}
+        env:
+          LIVE_URL: ${{ vars.LIVE_URL }}
+        run: |
+          pip install pytest
+          pytest e2e/test_live.py -q
