@@ -3,6 +3,7 @@
   "tokenizers": {
     "o200k_base": {"adapter": "tiktoken", "encoding": "o200k_base", "family": "OpenAI", "algorithm": "byte-level BPE"},
     "llama-3": {"adapter": "huggingface", "hf_id": "meta-llama/Llama-3.1-8B", "family": "Meta", "algorithm": "byte-level BPE", "gated": true},
+    "rule-of-thumb-4": {"adapter": "heuristic", "chars_per_token": 4, "family": "estimate", "algorithm": "rule of thumb: characters ÷ 4", "exact": false},
     "gemma-3": {"adapter": "huggingface", "hf_id": "google/gemma-3-4b-it", "family": "Google", "algorithm": "SentencePiece", "gated": true}
   },
   "models": [
