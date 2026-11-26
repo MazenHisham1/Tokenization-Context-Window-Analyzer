@@ -1,16 +1,8 @@
-"""End-to-end tests: a real browser against the real front-end build and the offline demo API.
-
-Run (from the project root):
-    pip install -r requirements-dev.txt && playwright install chromium
-    cd frontend && npm ci && npm run build && cd ..
-    pytest e2e                       # E2E_BROWSER=firefox|webkit to try another browser
-
-The servers are started and stopped by the fixtures below. Ports: API 8000, front end 4173.
-"""
 import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 from pathlib import Path
@@ -31,7 +23,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def _wait(url: str, seconds: float = 30) -> None:
+def _wait(url: str, log: Path, seconds: float = 60) -> None:
     deadline = time.time() + seconds
     while time.time() < deadline:
         try:
@@ -39,18 +31,24 @@ def _wait(url: str, seconds: float = 30) -> None:
             return
         except OSError:
             time.sleep(0.3)
-    raise RuntimeError(f"{url} did not start within {seconds} s")
+    # Show what the server itself said, otherwise a CI failure is a mystery.
+    output = log.read_text(errors="replace")[-2000:]
+    raise RuntimeError(f"{url} did not start within {seconds} s. Server output:\n{output}")
 
 
 @pytest.fixture(scope="session")
 def servers():
-    api = subprocess.Popen([sys.executable, "-m", "uvicorn", "api.demo:app", "--port", "8000"], cwd=ROOT,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    app = subprocess.Popen(["npx", "vite", "preview", "--port", "4173", "--strictPort"], cwd=FRONTEND,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    logs = Path(tempfile.mkdtemp())
+    api_log, app_log = logs / "api.log", logs / "app.log"
+    api = subprocess.Popen([sys.executable, "-m", "uvicorn", "api.demo:app", "--host", "127.0.0.1", "--port", "8000"],
+                           cwd=ROOT, stdout=api_log.open("w"), stderr=subprocess.STDOUT)
+    # --host 127.0.0.1: without it Vite listens on "localhost", which on some machines (GitHub's runners)
+    # means IPv6 only, and then http://127.0.0.1:4173 is never reachable.
+    app = subprocess.Popen(["npx", "vite", "preview", "--host", "127.0.0.1", "--port", "4173", "--strictPort"],
+                           cwd=FRONTEND, stdout=app_log.open("w"), stderr=subprocess.STDOUT)
     try:
-        _wait(f"{API_URL}/api/health")
-        _wait(APP_URL)
+        _wait(f"{API_URL}/api/health", api_log)
+        _wait(APP_URL, app_log)
         yield
     finally:
         for proc in (app, api):
