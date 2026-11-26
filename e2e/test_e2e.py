@@ -1,3 +1,12 @@
+"""End-to-end tests: a real browser against the real front-end build and the offline demo API.
+
+Run (from the project root):
+    pip install -r requirements-dev.txt && playwright install chromium
+    cd frontend && npm ci && npm run build && cd ..
+    pytest e2e                       # E2E_BROWSER=firefox|webkit to try another browser
+
+The servers are started and stopped by the fixtures below. Ports: API 8000, front end 4173.
+"""
 import json
 import os
 import subprocess
