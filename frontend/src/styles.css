@@ -190,3 +190,7 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 a { color: var(--accent); }
 .chips:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* ---- Phase 8: footer ---- */
+.site-footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
+.site-footer p { margin: .4rem 0; }

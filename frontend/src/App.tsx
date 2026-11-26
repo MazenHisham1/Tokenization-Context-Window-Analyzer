@@ -78,6 +78,24 @@ export default function App() {
       {mode === "single" && <SingleView debouncedText={debouncedText} tokenizers={withTokens} />}
       {mode === "compare" && <CompareView debouncedText={debouncedText} tokenizers={tokenizers} />}
       {mode === "context" && <ContextView />}
+
+      <footer className="site-footer">
+        <p>
+          <strong>Built with Llama.</strong> Llama 3.1 is used under the{" "}
+          <a href="https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/LICENSE" target="_blank" rel="noreferrer">
+            Llama 3.1 Community License
+          </a>{" "}
+          and its{" "}
+          <a href="https://llama.meta.com/llama3_1/use-policy" target="_blank" rel="noreferrer">Acceptable Use Policy</a>. Gemma is
+          provided under the{" "}
+          <a href="https://ai.google.dev/gemma/terms" target="_blank" rel="noreferrer">Gemma Terms of Use</a> and its{" "}
+          <a href="https://ai.google.dev/gemma/prohibited_use_policy" target="_blank" rel="noreferrer">Prohibited Use Policy</a>.
+        </p>
+        <p>
+          Tokenizer files are downloaded from Hugging Face when needed; this site does not host model weights. Text you
+          type is sent to the server only to be counted and is not stored.
+        </p>
+      </footer>
     </main>
   );
 }
