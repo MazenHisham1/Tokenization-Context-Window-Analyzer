@@ -9,6 +9,7 @@ from src.bpe import BPETokenizer
 from src.config import build_registry, load_config
 from src.tokenizers import CustomBPEAdapter
 
+from .hardening import add_rate_limit, warm_up
 from .main import create_app
 from .schemas import TokenizerInfo
 
@@ -29,7 +30,15 @@ def build_default_app():
     infos.append(TokenizerInfo(name=mine.name, family=mine.family, algorithm=mine.algorithm, exact=True))
 
     origins = [o for o in os.getenv("CORS_ORIGINS", "").split(",") if o]
-    return create_app(registry, infos, models, cors_origins=origins)
+    dist = Path(os.getenv("FRONTEND_DIST", ROOT / "frontend" / "dist"))
+    app = create_app(registry, infos, models, cors_origins=origins, static_dir=dist)
+
+    # Public-site settings, all off by default so a local run behaves as before.
+    if int(os.getenv("RATE_LIMIT_PER_MIN", "0")) > 0:
+        add_rate_limit(app, int(os.getenv("RATE_LIMIT_PER_MIN", "0")), int(os.getenv("TRUST_PROXY_HOPS", "0")))
+    if os.getenv("WARMUP") == "1":
+        warm_up(registry, [n for n, s in specs.items() if s.get("adapter") != "heuristic"])
+    return app
 
 
 app = build_default_app()

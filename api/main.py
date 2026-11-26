@@ -1,10 +1,12 @@
 """The web API. `create_app` receives its dependencies, so tests can pass a fake registry."""
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from src.config import ModelSpec
 from src.context import Size, plan_context
@@ -33,7 +35,8 @@ log = logging.getLogger("tokenizer-api")
 
 
 def create_app(registry: TokenizerRegistry, infos: list[TokenizerInfo],
-               models: dict[str, ModelSpec], cors_origins: list[str] | None = None) -> FastAPI:
+               models: dict[str, ModelSpec], cors_origins: list[str] | None = None,
+               static_dir: Path | None = None) -> FastAPI:
     app = FastAPI(title="Tokenization & Context Window Analyzer", version="0.6.0")
     infos_by_name = {i.name: i for i in infos}
 
@@ -140,5 +143,9 @@ def create_app(registry: TokenizerRegistry, infos: list[TokenizerInfo],
             reserve_output=req.reserve_output, budget=plan.budget, per_message_overhead=req.per_message_overhead,
             total_tokens=plan.total, used_tokens=plan.used, overflow_tokens=max(0, plan.total - plan.budget),
             fits=plan.fits, cannot_fit=plan.cannot_fit, nothing_fits=plan.nothing_fits, messages=out)
+
+    # The built web app, when there is one (the Docker image has it). Mounted LAST, so every /api route above wins.
+    if static_dir is not None and Path(static_dir, "index.html").exists():
+        app.mount("/", StaticFiles(directory=static_dir, html=True), name="web")
 
     return app
