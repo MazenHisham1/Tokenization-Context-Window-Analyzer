@@ -1,6 +1,6 @@
 """Smoke test of a running site (the deployed site, or the Docker container on your machine).
 
-    LIVE_URL=https://your-service.onrender.com pytest e2e/test_live.py
+    LIVE_URL=http://127.0.0.1:7860 pytest e2e/test_live.py
 
 Uses only what needs no downloads (`my-bpe` and the estimate), so it passes even if Llama or Gemma cannot load.
 """
