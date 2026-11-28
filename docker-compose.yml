@@ -1,0 +1,16 @@
+# Run the whole app (web page + API) with one command:
+#     docker compose up --build        then open http://localhost:7860
+# To let Llama and Gemma load, pass your Hugging Face READ token from your shell (never write it in this file):
+#     Windows cmd:   set HF_TOKEN=hf_xxx   then   docker compose up --build
+#     PowerShell:    $env:HF_TOKEN="hf_xxx"; docker compose up --build
+services:
+  app:
+    build: .
+    image: tokenizer-lab
+    ports:
+      - "7860:7860"
+    environment:
+      - HF_TOKEN            # taken from your shell; if it is not set, the gated tokenizers say "could not run"
+      - WARMUP=1            # load the tokenizers in the background (fine on a normal computer)
+      - RATE_LIMIT_PER_MIN=0  # no rate limit on your own machine
+    restart: unless-stopped

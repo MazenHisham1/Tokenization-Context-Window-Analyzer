@@ -1,4 +1,4 @@
-# One image: the built web app plus the API that serves it. Used by the hosted demo (Render).
+# One image: the built web app plus the API that serves it. Run locally with Docker, and later on a host.
 #   docker build -t tokenizer-lab .
 #   docker run -p 7860:7860 -e HF_TOKEN=hf_xxx tokenizer-lab     then open http://localhost:7860
 
@@ -36,8 +36,8 @@ USER user
 #   RATE_LIMIT_PER_MIN   calls per minute and visitor to the /api routes
 #   TRUST_PROXY_HOPS     proxies in front of the app; needed to tell visitors apart
 #   WARMUP               1 = load the tokenizers in the background at start-up (off: the free plan has 512 MB RAM)
-# HF_TOKEN (a Read token for the gated Llama and Gemma tokenizers) is NOT set here: add it as a secret on the host.
-# The host tells the app which port to use in PORT (Render); 7860 is the default for local runs.
+# HF_TOKEN (a Read token for the gated Llama and Gemma tokenizers) is NOT set here: add it as a secret (docker compose reads it from your shell).
+# A host may set PORT; 7860 is the default.
 ENV FRONTEND_DIST=/app/frontend/dist \
     RATE_LIMIT_PER_MIN=120 \
     TRUST_PROXY_HOPS=1 \
