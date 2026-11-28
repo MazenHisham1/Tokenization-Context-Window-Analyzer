@@ -1,0 +1,12 @@
+# Render "Blueprint": lets Render create the service from this file (New -> Blueprint).
+# Free plan, built from the Dockerfile. Add the secret HF_TOKEN in the Render dashboard (it is not stored here).
+services:
+  - type: web
+    name: tokenization-analyzer
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: HF_TOKEN
+        sync: false
