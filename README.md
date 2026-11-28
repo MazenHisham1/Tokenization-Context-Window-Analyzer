@@ -17,7 +17,7 @@ Compare how OpenAI, Llama and Gemma tokenizers split the same sentence, and look
 </div>
 
 ---
-## 🚀 Deployment & Live Demo
+## Deployment & Live Demo
 
 1. **Runs end to end from this repo:** the frontend is built by GitHub Actions and published to GitHub Pages at [https://mazenhisham1.github.io/Research-Paper-Discovery-Hub/](https://mazenhisham1.github.io/Research-Paper-Discovery-Hub/), and it calls the backend API hosted on Vercel at [https://research-paper-discovery-hub-git-main-mazen-681c.vercel.app/api](https://research-paper-discovery-hub-git-main-mazen-681c.vercel.app/api) (to run it locally, copy .env.example to .env.local, set VITE_BACKEND_URL to that Vercel URL, then run pnpm install && pnpm dev and open [http://localhost:3000](http://localhost:3000)). It needs two keys: an **OpenAlex API key**, set as an environment variable in the Vercel project (Settings → Environment Variables) as OPENALEX_API_KEY, and one AI key, either an **OpenRouter key** (sk-or-v1-...) or a **Google Gemini key** (AIza...), which you paste into **Settings** in the app after choosing the provider.
 
