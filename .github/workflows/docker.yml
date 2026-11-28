@@ -1,0 +1,55 @@
+name: Docker
+
+# Builds the Docker image, starts it, and runs the live smoke test against the running container.
+# On pushes to main it also publishes the image to GitHub's free container registry (ghcr.io).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    name: Build and run the image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: docker build --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" -t tokenizer-lab .
+
+      - name: Start the container
+        run: docker run -d --name app -p 7860:7860 tokenizer-lab
+
+      - name: Wait until it answers
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:7860/api/health | grep -q '"ok"'; then echo "up"; exit 0; fi
+            sleep 2
+          done
+          docker logs app
+          exit 1
+
+      - name: Smoke-test the running container
+        run: |
+          pip install pytest
+          LIVE_URL=http://127.0.0.1:7860 pytest e2e/test_live.py -q
+
+      - name: Show the container log if something failed
+        if: failure()
+        run: docker logs app
+
+      - name: Publish the image to ghcr.io (main only)
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+          docker tag tokenizer-lab "${IMAGE}:latest"
+          docker tag tokenizer-lab "${IMAGE}:${GITHUB_SHA::7}"
+          docker push "${IMAGE}:latest"
+          docker push "${IMAGE}:${GITHUB_SHA::7}"
+          echo "Published ${IMAGE}"
