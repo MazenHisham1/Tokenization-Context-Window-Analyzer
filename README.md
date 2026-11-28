@@ -206,8 +206,8 @@ More detail: [engine design](docs/DESIGN.md) · [web app walkthrough](docs/PHASE
 - [x] **Phase 3:** API and web MVP
 - [x] **Phase 4:** coloured token view, tooltips, word splits
 - [x] **Phase 5:** side-by-side comparison with charts
-- [ ] **Phase 6:** context-window simulator (what is kept or dropped on overflow)
-- [ ] **Phase 7:** CI, accessibility and performance work
+- [x] **Phase 6:** context-window simulator (what is kept or dropped on overflow)
+- [x] **Phase 7:** CI, accessibility and performance work
 - [ ] **Phase 8:** deployment, plus a multilingual token-cost study
 
 ## Known limitations
